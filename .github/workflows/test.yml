@@ -17,7 +17,8 @@ jobs:
       - name: install dependencies
         run: |
             sudo apt-get update ||:
-            sudo apt-get -y install build-essential libimager-perl libextutils-cppguess-perl libzxingcore-dev
+            sudo apt-get -y install build-essential libextutils-cppguess-perl libzxingcore-dev
+            sudo cpan Imager
       - name: checkout
         uses: actions/checkout@v2
       - name: configure
