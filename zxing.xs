@@ -158,6 +158,21 @@ SV *
 dec_error(Imager::zxing::Decoder dec)
 
 void
+dec_set_return_errors(Imager::zxing::Decoder dec, bool val)
+  ALIAS:
+    set_return_errors = 1
+    set_pure = 2
+  CODE:
+    switch (ix) {
+    case 1:
+      dec->hints.setReturnErrors(val);
+      break;
+    case 2:
+      dec->hints.setIsPure(val);
+      break;
+    }
+
+void
 dec_avail_formats(cls)
   PPCODE:
     auto v = dec_avail_formats();

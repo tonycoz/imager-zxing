@@ -30,6 +30,14 @@ my $im = Imager->new(file => "t/simple.ppm")
   my @r = $d->decode($rim);
   ok(@r, "got result from rotated image");
   is($r[0]->orientation, 20, "check orientation");
+
+  {
+    local $TODO = "pure doesn't seem to matter";
+    my $d2 = Imager::zxing::Decoder->new;
+    $d2->set_pure(1);
+    @r = $d2->decode($rim);
+    ok(!@r, "no result on pure decode of a rotated image");
+  }
 }
 
 {
