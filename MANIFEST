@@ -1,0 +1,11 @@
+lib/Imager/zxing.pm
+MANIFEST			This list of files
+MANIFEST.SKIP
+MYMETA.json
+MYMETA.yml
+t/00-use.t
+t/10-formats.t
+t/30-decode.t
+t/simple.ppm
+typemap
+zxing.xs
