@@ -2,6 +2,7 @@ lib/Imager/zxing.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
+README.pod
 t/00-use.t
 t/10-formats.t
 t/30-decode.t
