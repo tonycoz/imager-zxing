@@ -133,9 +133,9 @@ dec_decode(Imager::zxing::Decoder dec, Imager im)
       EXTEND(SP, results->size());
       for (auto &&r : *results) {
         auto pr = new Result(r);
-        SV *sv_r = newSV(0);
+        SV *sv_r = sv_newmortal();
         sv_setref_pv(sv_r, "Imager::zxing::Decoder::Result", pr);
-        PUSHs(sv_2mortal(sv_r));
+        PUSHs(sv_r);
       }
     }
     else {
@@ -151,7 +151,7 @@ dec_avail_formats(cls)
     auto v = dec_avail_formats();
     EXTEND(SP, v.size());
     for (auto f : v) {
-      PUSHs(sv_2mortal(newSVpvn(f.data(), f.size())));
+      PUSHs(newSVpvn_flags(f.data(), f.size(), SVs_TEMP));
     }
 
 MODULE = Imager::zxing PACKAGE = Imager::zxing::Decoder::Result PREFIX = res_
