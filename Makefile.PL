@@ -67,6 +67,7 @@ $opts{META_MERGE}{prereqs} =
         @Imager_req,
         "ExtUtils::CppGuess" => 0,
         "ExtUtils::MakeMaker" => "6.46",
+        "ExtUtils::CppGuess" => 0,
       },
     },
     build =>
