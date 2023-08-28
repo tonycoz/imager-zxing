@@ -56,7 +56,8 @@ push @inc, Imager::ExtUtils->includes;
 $opts{TYPEMAPS} = [ Imager::ExtUtils->typemap ];
 
 # Imager required configure through use
-my @Imager_req = ( Imager => "0.94" );
+# need 1.015 for C++ compatibility
+my @Imager_req = ( Imager => "1.015" );
 $opts{META_MERGE}{prereqs} =
   {
     configure =>
