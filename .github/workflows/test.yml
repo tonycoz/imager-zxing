@@ -17,7 +17,15 @@ jobs:
       - name: install dependencies
         run: |
             sudo apt-get update ||:
-            sudo apt-get -y install build-essential libextutils-cppguess-perl libzxingcore-dev
+            sudo apt-get -y install build-essential libextutils-cppguess-perl
+            wget https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v2.1.0.tar.gz
+            ls
+            tar xzf v2.1.0.tar.gz
+            ls
+            cd zxing-cpp-2.1.0
+            mkdir build
+            cmake -B build && cd build && make && sudo make install
+            echo "LD_LIBRARY_PATH=$(pkg-config --variable=libdir zxing)" >>$GITHUB_ENV
             sudo cpan Imager
       - name: checkout
         uses: actions/checkout@v2
