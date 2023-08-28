@@ -105,10 +105,22 @@ res_textx(pTHX_ Result *res) {
   return newSVpvn(s.data(), s.size());
 }
 
+#define Q_(x) #x
+#define Q(x) Q_(x)
+
+#define zx_version() \
+  Q(ZXING_VERSION_MAJOR) "." Q(ZXING_VERSION_MINOR) "." Q(ZXING_VERSION_PATCH)
+
 typedef decoder *Imager__zxing__Decoder;
 typedef Result *Imager__zxing__Decoder__Result;
 
 DEFINE_IMAGER_CALLBACKS;
+
+MODULE = Imager::zxing PACKAGE = Imager::zxing PREFIX=zx_
+
+const char *
+zx_version(...)
+  C_ARGS:
 
 MODULE = Imager::zxing PACKAGE = Imager::zxing::Decoder PREFIX=dec_
 
@@ -158,6 +170,64 @@ MODULE = Imager::zxing PACKAGE = Imager::zxing::Decoder::Result PREFIX = res_
 
 SV *
 res_text(Imager::zxing::Decoder::Result res)
+
+bool
+is_valid(Imager::zxing::Decoder::Result res)
+  ALIAS:
+    is_valid = 1
+    is_mirrored = 2
+    is_inverted = 3
+  CODE:
+    switch (ix) {
+    case 1:
+      RETVAL = res->isValid();
+      break;
+    case 2:
+      RETVAL = res->isMirrored();
+      break;
+    case 3:
+#if ZXING_MAJOR_VERSION >= 2
+      RETVAL = res->isInverted();
+#else
+      RETVAL = false;
+#endif
+      break;
+    }
+  OUTPUT: RETVAL
+
+SV *
+format(Imager::zxing::Decoder::Result res)
+  ALIAS:
+    format = 1
+    content_type = 2
+  CODE:
+    std::string out;
+    switch (ix) {
+    case 1:
+      out = ToString(res->format());
+      break;
+    case 2:
+      out = ToString(res->contentType());
+      break;
+    }
+    RETVAL = newSVpvn(out.data(), out.size());
+  OUTPUT: RETVAL
+
+void
+position(Imager::zxing::Decoder::Result res)
+  PPCODE:
+    auto pos = res->position();
+    EXTEND(SP, 8);
+    for (auto &f : pos) {
+      PUSHs(sv_2mortal(newSViv(f.x)));
+      PUSHs(sv_2mortal(newSViv(f.y)));
+    }
+
+int
+orientation(Imager::zxing::Decoder::Result res)
+  CODE:
+    RETVAL = res->orientation();
+  OUTPUT: RETVAL
 
 void
 res_DESTROY(Imager::zxing::Decoder::Result res)
