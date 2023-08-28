@@ -172,7 +172,7 @@ SV *
 res_text(Imager::zxing::Decoder::Result res)
 
 bool
-is_valid(Imager::zxing::Decoder::Result res)
+res_is_valid(Imager::zxing::Decoder::Result res)
   ALIAS:
     is_valid = 1
     is_mirrored = 2
@@ -196,7 +196,7 @@ is_valid(Imager::zxing::Decoder::Result res)
   OUTPUT: RETVAL
 
 SV *
-format(Imager::zxing::Decoder::Result res)
+res_format(Imager::zxing::Decoder::Result res)
   ALIAS:
     format = 1
     content_type = 2
@@ -214,7 +214,7 @@ format(Imager::zxing::Decoder::Result res)
   OUTPUT: RETVAL
 
 void
-position(Imager::zxing::Decoder::Result res)
+res_position(Imager::zxing::Decoder::Result res)
   PPCODE:
     auto pos = res->position();
     EXTEND(SP, 8);
@@ -224,7 +224,7 @@ position(Imager::zxing::Decoder::Result res)
     }
 
 int
-orientation(Imager::zxing::Decoder::Result res)
+res_orientation(Imager::zxing::Decoder::Result res)
   CODE:
     RETVAL = res->orientation();
   OUTPUT: RETVAL
