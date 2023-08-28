@@ -101,6 +101,7 @@ $opts{PREREQ_PM} =
 
 my $cflags = `pkg-config --cflags zxing`;
 my $ldflags = `pkg-config --libs zxing`;
+my $version = `pkg-config --modversion zxing`;
 
 unless ($cflags && $ldflags && $cflags =~ /\S/ && $ldflags =~ /\S/) {
   die <<'DIE'
@@ -111,6 +112,13 @@ or
   pkg-config --libs zxing
 
 didn't return a useful result.
+DIE
+}
+my @v = split /\./, $version;
+my $v = $v[0] * 10_000 + $v[1] * 100 + $v[2];
+if ($v < 10400) {
+  die <<DIE
+OS unsupported: zxing $version too old, 1.4.0 or later required
 DIE
 }
 tr/\n /  /s for $cflags, $ldflags;
