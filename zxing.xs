@@ -13,6 +13,21 @@
 
 using namespace ZXing;
 
+// typemap support
+using std_string = std::string;
+
+#define string_to_SV(str, flags) string_to_SVx(aTHX_ (str), (flags))
+static inline SV *
+string_to_SVx(pTHX_ const std::string &str, U32 flags) {
+  SV *sv = newSVpvn_flags(str.data(), str.size(), flags);
+
+  // in theory at least, the decoded strings are UTF-8
+  // in C++20 that would mean std::u8string but zxing doesn't seem to use that yet
+  sv_utf8_decode(sv);
+
+  return sv;
+}
+
 struct decoder {
   DecodeHints hints;
   std::string error;
@@ -36,10 +51,9 @@ dec_DESTROY(decoder *dec) {
 }
 
 #define dec_formats(dec) dec_formatsx(aTHX_ (dec))
-static SV *
+static std::string
 dec_formatsx(pTHX_ decoder *dec) {
-  auto str = ToString(dec->hints.formats());
-  return newSVpvn(str.data(), str.size());
+  return ToString(dec->hints.formats());
 }
 
 static bool
@@ -54,10 +68,9 @@ dec_set_formats(decoder *dec, const char *formats) {
   }
 }
 
-#define dec_error(dec) dec_errorx(aTHX_ (dec))
-static SV *
-dec_errorx(pTHX_ decoder *dec) {
-  return newSVpvn(dec->error.data(), dec->error.size());
+static inline std::string
+dec_error(decoder *dec) {
+  return dec->error;
 }
 
 static std::vector<std::string>
@@ -98,11 +111,9 @@ dec_decode(decoder *dec, i_img *im) {
   return ReadBarcodes(image, dec->hints);
 }
 
-#define res_text(res) res_textx(aTHX_ (res))
-static SV *
-res_textx(pTHX_ Result *res) {
-  auto s = res->text();
-  return newSVpvn(s.data(), s.size());
+static inline std_string
+res_text(Result *res) {
+  return res->text();
 }
 
 #define Q_(x) #x
@@ -131,7 +142,7 @@ dec_new(cls)
 void
 dec_DESTROY(Imager::zxing::Decoder dec)
 
-SV *
+std_string
 dec_formats(Imager::zxing::Decoder dec)
 
 bool
@@ -154,7 +165,7 @@ dec_decode(Imager::zxing::Decoder dec, Imager im)
       XSRETURN_EMPTY;
     }
 
-SV *
+std_string
 dec_error(Imager::zxing::Decoder dec)
 
 void
@@ -178,12 +189,12 @@ dec_avail_formats(cls)
     auto v = dec_avail_formats();
     EXTEND(SP, v.size());
     for (auto f : v) {
-      PUSHs(newSVpvn_flags(f.data(), f.size(), SVs_TEMP));
+      PUSHs(string_to_SV(f, SVs_TEMP));
     }
 
 MODULE = Imager::zxing PACKAGE = Imager::zxing::Decoder::Result PREFIX = res_
 
-SV *
+std_string
 res_text(Imager::zxing::Decoder::Result res)
 
 bool
@@ -210,22 +221,20 @@ res_is_valid(Imager::zxing::Decoder::Result res)
     }
   OUTPUT: RETVAL
 
-SV *
+std_string
 res_format(Imager::zxing::Decoder::Result res)
   ALIAS:
     format = 1
     content_type = 2
   CODE:
-    std::string out;
     switch (ix) {
     case 1:
-      out = ToString(res->format());
+      RETVAL = ToString(res->format());
       break;
     case 2:
-      out = ToString(res->contentType());
+      RETVAL = ToString(res->contentType());
       break;
     }
-    RETVAL = newSVpvn(out.data(), out.size());
   OUTPUT: RETVAL
 
 void
