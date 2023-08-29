@@ -5,4 +5,4 @@ zxing.c
 zxing.bs
 Makefile
 MYMETA.*
-Imager-zxing-*/
+Imager-zxing-*
