@@ -3,6 +3,7 @@ use strict;
 use ExtUtils::MakeMaker 6.46;
 use ExtUtils::CppGuess;
 use Getopt::Long;
+use List::Util "first";
 use Config;
 
 my $verbose = $ENV{IM_VERBOSE};
@@ -68,6 +69,7 @@ $opts{META_MERGE}{prereqs} =
         "ExtUtils::CppGuess" => "0.22",
         "ExtUtils::MakeMaker" => "6.46",
         "ExtUtils::CppGuess" => 0,
+        "List::Util" => "1.43",
       },
     },
     build =>
@@ -99,9 +101,19 @@ $opts{PREREQ_PM} =
     XSLoader => 0,
   };
 
-my $cflags = `pkg-config --cflags zxing`;
-my $ldflags = `pkg-config --libs zxing`;
-my $version = `pkg-config --modversion zxing`;
+
+my $pkgname = first { system("pkg-config --exists $_") == 0 } qw( zxing zxing-cpp );
+
+die <<'DIE' unless $pkgname;
+OS unsupported: Can't find pkg-config for zxing or zxing-cpp.
+Make sure you have the devel package installed
+DIE
+
+print "Found $pkgname\n";
+
+my $cflags = `pkg-config --cflags $pkgname`;
+my $ldflags = `pkg-config --libs $pkgname`;
+my $version = `pkg-config --modversion $pkgname`;
 
 unless ($cflags && $ldflags && $cflags =~ /\S/ && $ldflags =~ /\S/) {
   die <<'DIE'
