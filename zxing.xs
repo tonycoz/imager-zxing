@@ -3,6 +3,7 @@
 #include "GTIN.h"
 #include "ZXVersion.h"
 #include <optional>
+#include <memory>
 
 #define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
@@ -82,31 +83,28 @@ dec_avail_formats() {
   return formats;
 }
 
-inline ImageFormat
-imager_to_ImageFormat(int channels) {
-  switch (channels) {
-  case 1:
-    return ImageFormat::Lum;
-  case 2:
-    return ImageFormat::None;
-  case 3:
-    return ImageFormat::RGB;
-  case 4:
-    return ImageFormat::RGBX;
-  default:
-    return ImageFormat::None;
+static const int
+grey_chans[] = { 0, 0, 0 };
+
+static std::unique_ptr<uint8_t[]>
+get_image_data(i_img *im) {
+  size_t row_size = im->xsize * 3;
+  std::unique_ptr<uint8_t[]> data{new uint8_t[im->ysize * row_size]};
+  const int *chans = im->channels < 3 ? grey_chans : nullptr;
+
+  auto datap = data.get();
+  for (i_img_dim y = 0; y < im->ysize; ++y) {
+    i_gsamp(im, 0, im->xsize, y, datap, chans, 3);
+    datap += row_size;
   }
+
+  return data;
 }
 
 static std::optional<Results>
 dec_decode(decoder *dec, i_img *im) {
-  // hackity hack
-  ImageView image(im->idata, im->xsize, im->ysize, imager_to_ImageFormat(im->channels));
-
-  if (image.format() == ImageFormat::None) {
-    dec->error = "grayscale/alpha not supported";
-    return {};
-  }
+  auto imdata = get_image_data(im);
+  ImageView image(imdata.get(), im->xsize, im->ysize, ImageFormat::RGB);
 
   return ReadBarcodes(image, dec->hints);
 }

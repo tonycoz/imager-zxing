@@ -47,4 +47,12 @@ my $im = Imager->new(file => "t/simple.ppm")
   ok($r[0]->is_mirrored, "check is_mirrored");
 }
 
+{
+  my $gim = $im->convert(preset => "grey");
+  is($gim->getchannels, 1, "yes, it's grey");
+  my @r = $d->decode($gim);
+  ok(@r, "got result from grey image");
+  is($r[0]->text, "Imager::zxing", "got expected result");
+}
+
 done_testing();
