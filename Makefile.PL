@@ -65,7 +65,7 @@ $opts{META_MERGE}{prereqs} =
       requires =>
       {
         @Imager_req,
-        "ExtUtils::CppGuess" => 0,
+        "ExtUtils::CppGuess" => "0.22",
         "ExtUtils::MakeMaker" => "6.46",
         "ExtUtils::CppGuess" => 0,
       },
@@ -124,9 +124,14 @@ DIE
 tr/\n /  /s for $cflags, $ldflags;
 
 my $guess = ExtUtils::CppGuess->new;
+# prefer C++20, but accept C++17
+my $std = '';
+unless (eval { $std = $guess->cpp_standard_flag("C++20") }) {
+  $std = $guess->cpp_standard_flag("C++17");
+}
 $guess->add_extra_compiler_flags
   (
-    $cflags . " " . Imager::ExtUtils->includes
+    $cflags . " " . Imager::ExtUtils->includes . " $std"
    );
 $guess->add_extra_linker_flags
   (
