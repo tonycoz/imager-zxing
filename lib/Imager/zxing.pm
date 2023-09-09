@@ -30,7 +30,7 @@ Imager::zxing - decode barcodes from Imager images using libzxing
 
   # decode any barcodes
   my $im = Imager->new(file => "somefile.png");
-  my @results = $decoder->decoder($im);
+  my @results = $decoder->decode($im);
 
   for my $result (@results) {
     print $result->text, "\n";
