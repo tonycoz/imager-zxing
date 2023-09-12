@@ -83,28 +83,27 @@ dec_avail_formats() {
   return formats;
 }
 
-static const int
-grey_chans[] = { 0, 0, 0 };
-
 static std::unique_ptr<uint8_t[]>
-get_image_data(i_img *im) {
-  size_t row_size = im->xsize * 3;
+get_image_data(i_img *im, ImageFormat &format) {
+  int channels = im->channels < 3 ? 1 : 3;
+  size_t row_size = im->xsize * channels;
   auto data{std::make_unique<uint8_t[]>(im->ysize * row_size)};
-  const int *chans = im->channels < 3 ? grey_chans : nullptr;
 
   auto datap = data.get();
   for (i_img_dim y = 0; y < im->ysize; ++y) {
-    i_gsamp(im, 0, im->xsize, y, datap, chans, 3);
+    i_gsamp(im, 0, im->xsize, y, datap, nullptr, channels);
     datap += row_size;
   }
 
+  format = channels == 1 ? ImageFormat::Lum : ImageFormat::RGB;
   return data;
 }
 
 static std::optional<Results>
 dec_decode(decoder *dec, i_img *im) {
-  auto imdata = get_image_data(im);
-  ImageView image(imdata.get(), im->xsize, im->ysize, ImageFormat::RGB);
+  ImageFormat format;
+  auto imdata = get_image_data(im, format);
+  ImageView image(imdata.get(), im->xsize, im->ysize, format);
 
   return ReadBarcodes(image, dec->hints);
 }
