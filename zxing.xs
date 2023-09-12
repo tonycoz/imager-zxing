@@ -89,7 +89,7 @@ grey_chans[] = { 0, 0, 0 };
 static std::unique_ptr<uint8_t[]>
 get_image_data(i_img *im) {
   size_t row_size = im->xsize * 3;
-  std::unique_ptr<uint8_t[]> data{new uint8_t[im->ysize * row_size]};
+  auto data{std::make_unique<uint8_t[]>(im->ysize * row_size)};
   const int *chans = im->channels < 3 ? grey_chans : nullptr;
 
   auto datap = data.get();
