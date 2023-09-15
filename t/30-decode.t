@@ -7,6 +7,8 @@ use Test::More;
 
 use Imager::zxing;
 
+my $v = version->new(Imager::zxing->version);
+
 my $d = Imager::zxing::Decoder->new;
 my $im = Imager->new(file => "t/simple.ppm")
   or die "Cannot load t/simple.ppm: ", Imager->errstr;
@@ -68,7 +70,6 @@ SKIP:
 {
   skip "PNG files not available", 1
     unless $p1 && $p8;
-  my $v = version->new(Imager::zxing->version);
   skip "decoding these images can assert before 2.1.0", 1
     if $v < v2.1.0;
   {
@@ -80,6 +81,26 @@ SKIP:
     my @r = $d->decode($p1);
     ok(@r, "decoded 1-bit image");
     is($r[0]->text, "FA158826", "got expected result");
+  }
+}
+
+{
+  # hints accessors
+  my $h = Imager::zxing::Decoder->new;
+  # boolean options
+  my @bool_opt = qw(try_harder try_downscale pure try_code39_extended_mode
+                validate_code39_checksum validate_itf_checksum
+                return_codabar_start_end return_errors try_rotate);
+  if ($v >= v2.0.0) {
+    push @bool_opt, "try_invert";
+  }
+ BOOLOPT:
+  for my $o (@bool_opt) {
+    my $set_meth = "set_$o";
+    $h->$set_meth(1);
+    ok($h->$o(), "$set_meth true saved");
+    $h->$set_meth(0);
+    ok(!$h->$o(), "$set_meth false saved");
   }
 }
 

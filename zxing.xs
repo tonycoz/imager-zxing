@@ -38,7 +38,7 @@ static decoder *
 dec_new() {
   decoder *dec = new decoder();
   dec->hints.setFormats(BarcodeFormats::all());
-#if ZXING_MAJOR_VERSION >= 2
+#if ZXING_VERSION_MAJOR >= 2
   dec->hints.setTextMode(TextMode::HRI);
 #endif
   dec->hints.setEanAddOnSymbol(EanAddOnSymbol::Read);
@@ -122,6 +122,19 @@ res_text(Result *res) {
 typedef decoder *Imager__zxing__Decoder;
 typedef Result *Imager__zxing__Decoder__Result;
 
+enum bool_options {
+  bo_try_harder = 1,
+  bo_try_downscale,
+  bo_pure,
+  bo_try_code39_extended_mode,
+  bo_validate_code39_checksum,
+  bo_validate_itf_checksum,
+  bo_return_codabar_start_end,
+  bo_return_errors,
+  bo_try_rotate,
+  bo_try_invert
+};
+
 DEFINE_IMAGER_CALLBACKS;
 
 MODULE = Imager::zxing PACKAGE = Imager::zxing PREFIX=zx_
@@ -164,21 +177,109 @@ dec_decode(Imager::zxing::Decoder dec, Imager im)
 
 std_string
 dec_error(Imager::zxing::Decoder dec)
-
+  
 void
-dec_set_return_errors(Imager::zxing::Decoder dec, bool val)
+dec_set_try_harder(Imager::zxing::Decoder dec, bool val)
   ALIAS:
-    set_return_errors = 1
-    set_pure = 2
+    set_try_harder = bo_try_harder
+    set_try_downscale = bo_try_downscale
+    set_pure = bo_pure
+    set_try_code39_extended_mode = bo_try_code39_extended_mode
+    set_validate_code39_checksum = bo_validate_code39_checksum
+    set_validate_itf_checksum = bo_validate_itf_checksum
+    set_return_codabar_start_end = bo_return_codabar_start_end
+    set_return_errors = bo_return_errors
+    set_try_rotate = bo_try_rotate
+    set_try_invert = bo_try_invert
   CODE:
-    switch (ix) {
-    case 1:
-      dec->hints.setReturnErrors(val);
+    switch (static_cast<bool_options>(ix)) {
+    case bo_try_harder:
+      dec->hints.setTryHarder(val);
       break;
-    case 2:
+    case bo_try_downscale:
+      dec->hints.setTryDownscale(val);
+      break;
+    case bo_pure:
       dec->hints.setIsPure(val);
       break;
+    case bo_try_code39_extended_mode:
+      dec->hints.setTryCode39ExtendedMode(val);
+      break;
+    case bo_validate_code39_checksum:
+      dec->hints.setValidateCode39CheckSum(val);
+      break;
+    case bo_validate_itf_checksum:
+      dec->hints.setValidateITFCheckSum(val);
+      break;
+    case bo_return_codabar_start_end:
+      dec->hints.setReturnCodabarStartEnd(val);
+      break;
+    case bo_return_errors:
+      dec->hints.setReturnErrors(val);
+      break;
+    case bo_try_rotate:
+      dec->hints.setTryRotate(val);
+      break;
+    case bo_try_invert:
+#if ZXING_VERSION_MAJOR >= 2
+      dec->hints.setTryInvert(val);
+#else
+      Perl_croak(aTHX_ "set_try_invert requires zxing-cpp 2.0.0 or later");
+#endif
+      break;
     }
+
+bool
+dec_try_harder(Imager::zxing::Decoder dec)
+  ALIAS:
+    try_harder = bo_try_harder
+    try_downscale = bo_try_downscale
+    pure = bo_pure
+    try_code39_extended_mode = bo_try_code39_extended_mode
+    validate_code39_checksum = bo_validate_code39_checksum
+    validate_itf_checksum = bo_validate_itf_checksum
+    return_codabar_start_end = bo_return_codabar_start_end
+    return_errors = bo_return_errors
+    try_rotate = bo_try_rotate
+    try_invert = bo_try_invert
+  CODE:
+    switch (static_cast<bool_options>(ix)) {
+    case bo_try_harder:
+      RETVAL = dec->hints.tryHarder();
+      break;
+    case bo_try_downscale:
+      RETVAL = dec->hints.tryDownscale();
+      break;
+    case bo_pure:
+      RETVAL = dec->hints.isPure();
+      break;
+    case bo_try_code39_extended_mode:
+      RETVAL = dec->hints.tryCode39ExtendedMode();
+      break;
+    case bo_validate_code39_checksum:
+      RETVAL = dec->hints.validateCode39CheckSum();
+      break;
+    case bo_validate_itf_checksum:
+      RETVAL = dec->hints.validateITFCheckSum();
+      break;
+    case bo_return_codabar_start_end:
+      RETVAL = dec->hints.returnCodabarStartEnd();
+      break;
+    case bo_return_errors:
+      RETVAL = dec->hints.returnErrors();
+      break;
+    case bo_try_rotate:
+      RETVAL = dec->hints.tryRotate();
+      break;
+    case bo_try_invert:
+#if ZXING_VERSION_MAJOR >= 2
+      RETVAL = dec->hints.tryInvert();
+#else
+      Perl_croak(aTHX_ "try_invert requires zxing-cpp 2.0.0 or later");
+#endif
+      break;
+    }
+  OUTPUT: RETVAL
 
 void
 dec_avail_formats(cls)

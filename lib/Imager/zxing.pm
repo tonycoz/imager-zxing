@@ -150,22 +150,109 @@ C<|> or comma separated string.
 
   $decoder->set_formats("DataMatrix|QRCode");
 
-=item * set_return_errors($bool)
+=back
 
-Set to non-zero to include results with soft errors such as checksum
-errors.
+There are various boolean options that can be set with set_I<option>(I<val>) setting the option and I<option>() returning the current value.
 
-  $decoder->set_return_errors(1);
+=over
 
-=item * set_pure($bool)
+=item * C<try_harder>
+
+Spend more time to try to find a barcode; optimize for accuracy, not
+speed.
+
+  $decoder->set_try_harder(0); # a bit faster
+  my $val = $decoder->try_harder;
+
+Default: true.
+
+=item * C<try_downscale>
+
+Also try detecting code in downscaled images (depending on image size).
+
+  $decoder->set_try_downscale(0); # a bit faster
+  my $val = $decoder->try_harder;
+
+Default: true.
+
+=item * C<pure>)
 
 Set to non-zero to only accept results where the image is an aligned
 image where the image is only the barcode.
 
+  $decoder->set_pure(1);
+  my $val = $decoder->pure();
+
+Default: false.
+
 Note: this appears to be non-functional in my testing, this accepted a
 rotated image.
 
-  $decoder->set_pure(1);
+=item * C<try_code39_extended_mode>
+
+If true, the Code-39 reader will try to read extended mode.
+
+  $decoder->set_try_code39_extended_mode(0);
+  my $val = $decoder->try_code39_extended_mode();
+
+Default: false.
+
+=item * C<validate_code39_checksum>
+
+Assume Code-39 codes employ a check digit and validate it.
+
+  $decoder->validate_code39_checksum(1);
+  my $val = $decoder->validate_code39_checksum;
+
+Default: false.
+
+=item * C<validate_itf_checksum>
+
+  $decoder->set_validate_itf_checksum(1);
+  my $val = $decoder->validate_itf_checksum();
+
+Assume ITF codes employ a GS1 check digit and validate it.
+
+Default: false.
+
+=item * C<return_codabar_start_end>
+
+If true, return the start and end chars in a Codabar barcode instead
+of stripping them.
+
+  $decoder->set_return_codabar_start_end(1);
+  my $val = $decoder->return_codabar_start_end();
+
+Default: false.
+
+=item * C<return_errors>
+
+Set to non-zero to include results with soft errors such as checksum
+errors.
+
+Default: false.
+
+  $decoder->set_return_errors(1);
+  my $val = $decoder->return_errors();
+
+=item * C<try_rotate>
+
+Also try detecting code in 90, 180 and 270 degree rotated images.
+
+  $decoder->set_try_rotate(1);
+  my $val = $decoder->try_rotate();
+
+Default: true.
+
+=item * C<try_invert>
+
+Also try detecting inverted ("reversed reflectance") codes if the
+format allows for those.
+
+  $decoder->set_try_invert(1);
+  my $val = $decoder->try_invert();
+
+Default: true.  Requires zxing-cpp 2.0.0 or later.
 
 =back
 
