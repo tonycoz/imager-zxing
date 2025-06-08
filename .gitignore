@@ -6,3 +6,6 @@ zxing.bs
 Makefile
 MYMETA.*
 Imager-zxing-*
+
+*~
+MANIFEST.bak
