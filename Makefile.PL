@@ -5,6 +5,11 @@ use ExtUtils::CppGuess;
 use Getopt::Long;
 use List::Util "first";
 use Config;
+use Imager::ExtUtils;
+
+# Imager required configure through use
+# need 1.015 for C++ compatibility
+my @Imager_req = ( Imager => "1.015" );
 
 my %opts = 
   (
@@ -14,9 +19,15 @@ my %opts =
    #DEFINE => $define,
    #clean => { FILES => 'testout' },
    LICENSE => "perl_5",
-   AUTHOR => 'Tony Cook <tonyc@cpan.org>',
+   AUTHOR => 'Tony Cook <tony@develop-help.com>',
    XSOPT => '-C++',
    ABSTRACT => 'Barcode scanning with libzxing-cpp',
+   TYPEMAPS => [ Imager::ExtUtils->typemap ],
+   #PREREQ_PM =>
+   #{
+   #  @Imager_req,
+   #  XSLoader => 0,
+   #},
    META_MERGE =>
    {
      'meta-spec' =>
@@ -38,61 +49,44 @@ my %opts =
          web => "https://github.com/tonycoz/imager-zxing/",
        },
      },
+     prereqs =>
+     {
+       configure =>
+       {
+         requires =>
+         {
+           @Imager_req,
+           "ExtUtils::CppGuess" => "0.22",
+           "ExtUtils::MakeMaker" => "6.46",
+           "ExtUtils::CppGuess" => 0,
+           "List::Util" => "1.43",
+         },
+       },
+       build =>
+       {
+         requires =>
+         {
+           @Imager_req,
+           "Test::More" => "0.47",
+         }
+       },
+       runtime =>
+       {
+         requires =>
+         {
+           @Imager_req,
+         }
+       },
+       test =>
+       {
+         requires =>
+         {
+           "Test::More" => "0.47",
+         }
+       },
+     },
    },
   );
-
-
-my @inc;
-unshift @INC, "inc";
-require Imager::ExtUtils;
-push @inc, Imager::ExtUtils->includes;
-$opts{TYPEMAPS} = [ Imager::ExtUtils->typemap ];
-
-# Imager required configure through use
-# need 1.015 for C++ compatibility
-my @Imager_req = ( Imager => "1.015" );
-$opts{META_MERGE}{prereqs} =
-  {
-    configure =>
-    {
-      requires =>
-      {
-        @Imager_req,
-        "ExtUtils::CppGuess" => "0.22",
-        "ExtUtils::MakeMaker" => "6.46",
-        "ExtUtils::CppGuess" => 0,
-        "List::Util" => "1.43",
-      },
-    },
-    build =>
-    {
-      requires =>
-      {
-        @Imager_req,
-        "Test::More" => "0.47",
-      }
-    },
-    runtime =>
-    {
-      requires =>
-      {
-        @Imager_req,
-      }
-    },
-    test =>
-    {
-      requires =>
-      {
-        "Test::More" => "0.47",
-      }
-    },
-  };
-$opts{PREREQ_PM} =
-  {
-    @Imager_req,
-    XSLoader => 0,
-  };
-
 
 my $pkgname = first { system("pkg-config --exists $_") == 0 } qw( zxing zxing-cpp );
 
