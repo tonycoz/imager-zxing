@@ -6,14 +6,6 @@ use Getopt::Long;
 use List::Util "first";
 use Config;
 
-my $verbose = $ENV{IM_VERBOSE};
-my @libpaths;
-my @incpaths;
-
-GetOptions("incpath=s", \@incpaths,
-           "libpath=s" => \@libpaths,
-           "verbose|v" => \$verbose);
-
 my %opts = 
   (
    NAME => 'Imager::zxing',
