@@ -3,6 +3,8 @@
 
  - expose all of the boolean decoder hints.
 
+ - re-work to take better advantage of ExtUtils::ParseXS's support for
+   C++ (hopefully no function changes)
 
 1.001 - 13 Sep 2023
 =====
