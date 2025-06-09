@@ -101,13 +101,13 @@ struct ZXingDecoderResult {
   std::string text() const {
     return m_result.text();
   }
-  bool is_valid() const {
+  bool isValid() const {
     return m_result.isValid();
   }
-  bool is_mirrored() const {
+  bool isMirrored() const {
     return m_result.isMirrored();
   }
-  bool is_inverted() const {
+  bool isInverted() const {
 #if ZXING_MAJOR_VERSION >= 2
     return m_result.isInverted();
 #else
@@ -117,7 +117,7 @@ struct ZXingDecoderResult {
   std::string format() const {
     return ToString(m_result.format());
   }
-  std::string content_type() const {
+  std::string contentType() const {
     return ToString(m_result.contentType());
   }
   Position position() const {
@@ -307,19 +307,19 @@ void
 ZXingDecoderResult::DESTROY()
 
 bool
-ZXingDecoderResult::is_valid() const
+ZXingDecoderResult::isValid() const
 
 bool
-ZXingDecoderResult::is_mirrored() const
+ZXingDecoderResult::isMirrored() const
 
 bool
-ZXingDecoderResult::is_inverted() const
+ZXingDecoderResult::isInverted() const
 
 std_string
 ZXingDecoderResult::format() const
 
 std_string
-ZXingDecoderResult::content_type() const
+ZXingDecoderResult::contentType() const
 
 void
 ZXingDecoderResult::position() const

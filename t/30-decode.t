@@ -26,11 +26,15 @@ if ($Imager::formats{png}) {
   ok(@r, "got results");
   is($r[0]->text, "Imager::zxing", "got expected result");
   ok($r[0]->is_valid, "result is valid");
+  ok($r[0]->isValid, "result is valid");
   is($r[0]->format, "DataMatrix", "format expected");
   is($r[0]->content_type, "Text", "content_type expected");
+  is($r[0]->contentType, "Text", "content_type expected");
   is($r[0]->orientation, 0, "orientation expected");
   ok(!$r[0]->is_mirrored, "check is_mirrored");
+  ok(!$r[0]->isMirrored, "check isMirrored");
   ok(!$r[0]->is_inverted, "check is_inverted");
+  ok(!$r[0]->isInverted, "check isInverted");
   my @pos = $r[0]->position;
   is_deeply(\@pos, [ 34, 34, 290, 34, 290, 290, 34, 290 ], "position expected")
     or diag "pos @pos";
@@ -61,6 +65,7 @@ if ($Imager::formats{png}) {
   my @r = $d->decode($mim);
   ok(@r, "got result from mirrored image");
   ok($r[0]->is_mirrored, "check is_mirrored");
+  ok($r[0]->isMirrored, "check isMirrored");
 }
 
 {
@@ -69,6 +74,18 @@ if ($Imager::formats{png}) {
   my @r = $d->decode($gim);
   ok(@r, "got result from grey image");
   is($r[0]->text, "Imager::zxing", "got expected result");
+}
+
+SKIP:
+{
+  $v >= v2.0.0
+    or skip "inverted from 2.0.0 only", 4;
+  my $inverted = $im->filter(type => "hardinvert");
+  my @r = $d->decode($inverted);
+  ok(@r, "got result from inverted image");
+  is($r[0]->text, "Imager::zxing", "got expected result");
+  ok($r[0]->isInverted, "check is isInverted");
+  ok($r[0]->is_inverted, "check is is_inverted");
 }
 
 SKIP:

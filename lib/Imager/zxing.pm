@@ -16,6 +16,15 @@ BEGIN {
 *Imager::zxing::Decoder::set_return_errors =
   \&Imager::zxing::Decoder::setReturnErrors;
 
+*Imager::zxing::Decoder::Result::is_valid =
+  \&Imager::zxing::Decoder::Result::isValid;
+*Imager::zxing::Decoder::Result::is_mirrored =
+  \&Imager::zxing::Decoder::Result::isMirrored;
+*Imager::zxing::Decoder::Result::is_inverted =
+  \&Imager::zxing::Decoder::Result::isInverted;
+*Imager::zxing::Decoder::Result::content_type =
+  \&Imager::zxing::Decoder::Result::contentType;
+
 1;
 
 =head1 NAME
@@ -284,19 +293,24 @@ Returns the decoded text.
 
   my $text = $result->text;
 
-=item * is_valid()
+=item * isValid()
 
 True if the result represents a valid decoded barcode.
 
-=item * is_mirrored()
+Replaces the deprecated is_valid() method.
+
+=item * isMirrored()
 
 True if the result is from a mirrored barcode.
 
-=item * is_inverted()
+Replaces the deprecated is_mirrored() method.
+
+=item * isInverted()
 
 True if the barcode image has inverted dark/light.  Requires zxing
 2.0.0 to be valid.
 
+Replaces the deprecated is_inverted() method.
 =item * format()
 
 The format of the decoded barcode.
@@ -314,8 +328,8 @@ The rotation of the barcode image in degrees.
 
 =head1 DEPRECATIONS
 
-The following method names are deprecated, and listed here with their
-replacements:
+The following method names from Imager::zxing::Decoder are deprecated,
+and listed here with their replacements:
 
 =over
 
@@ -329,6 +343,29 @@ Replaced by setReturnErrors().
 
 =back
 
+The following method names from Imager::zxing::Decoder::Result are
+deprecated and listed here with their replacements:
+
+=over
+
+=item content_type()
+
+Replaced by contentType()
+
+=item is_mirrored()
+
+Replaced by isMirrored()
+
+=item is_valid()
+
+Replaced by isValid()
+
+=item is_inverted()
+
+Replaced by isInverted().
+
+=back
+
 These have been renamed to better match the C++ API.  The old names
 are available without warning for now, but will produce a default-on
 warning in a future release and removed at some point after that.
@@ -336,5 +373,13 @@ warning in a future release and removed at some point after that.
 =head1 LICENSE
 
 Imager::zxing is licensed under the same terms as perl itself.
+
+=head1 SEE ALSO
+
+Imager
+
+=head1 AUTHOR
+
+Tony Cook <tony@develop-help.com>
 
 =cut
