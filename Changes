@@ -6,6 +6,13 @@
  - re-work to take better advantage of ExtUtils::ParseXS's support for
    C++ (hopefully no function changes)
 
+ - rename decoder and result object accessors to match the C++ APIs,
+   this is mostly from like_this() to likeThis().  The old method
+   names continue to be available for now but they are now silently
+   deprecated.
+   They will start warning from some future release, and be removed
+   from some later release.
+
 1.001 - 13 Sep 2023
 =====
 

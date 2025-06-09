@@ -41,6 +41,32 @@ if ($Imager::formats{png}) {
 }
 
 {
+  my @formats = Imager::zxing::Decoder->availFormats;
+  my @old_formats = Imager::zxing::Decoder->avail_formats;
+  # mostly checking both work
+  is_deeply(\@formats, \@old_formats, "availFormats vs avail_formats");
+}
+
+{
+  my $fd = Imager::zxing::Decoder->new;
+  note $fd->formats;
+  my @formats = split /\|/, $fd->formats;
+  ok(grep($_ eq "DataMatrix", @formats),
+     "should have DataMatrix by default");
+  my @other = grep $_ ne "DataMatrix",
+    Imager::zxing::Decoder->availFormats;
+  my $other = join ",", @other; # we also accept ,
+  my $otherp = join "|", @other;
+  ok($fd->setFormats($other), "set formats (comma sep)");
+  is($fd->formats, $otherp, "comes back as | separated");
+  my @r = $fd->decode($im);
+  is(@r, 0, "shouldn't decode DataMatrix now");
+  ok($fd->set_formats("DataMatrix"), "set by old method name"); # old name
+  is_deeply([ $fd->formats ], [ "DataMatrix" ],
+            "check it was set");
+}
+
+{
   my $rim = $im->rotate(degrees => 20);
   my @r = $d->decode($rim);
   ok(@r, "got result from rotated image");

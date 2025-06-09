@@ -59,7 +59,7 @@ struct ZXingDecoder {
   // modern zxing takes a string_view here, but 1.4 wants a string /cry
   // and doesn't try to convert it
   bool
-  set_formats(const std::string &formats) {
+  setFormats(const std::string &formats) {
     try {
       hints.setFormats(BarcodeFormatsFromString(formats));
       return true;
@@ -84,7 +84,7 @@ struct ZXingDecoder {
   }
 
   static std::vector<std::string>
-  avail_formats() {
+  availFormats() {
     std::vector<std::string> formats;
     for (auto f : BarcodeFormats::all()) {
       formats.emplace_back(ToString(f));
@@ -169,7 +169,7 @@ std_string
 ZXingDecoder::formats() const
 
 bool
-ZXingDecoder::set_formats(std_string formats)
+ZXingDecoder::setFormats(std_string formats)
 
 void
 ZXingDecoder::decode(Imager im) const
@@ -187,9 +187,9 @@ std_string
 ZXingDecoder::error() const
 
 static void
-ZXingDecoder::avail_formats()
+ZXingDecoder::availFormats()
   PPCODE:
-    const auto &v = ZXingDecoder::avail_formats();
+    const auto &v = ZXingDecoder::availFormats();
     EXTEND(SP, v.size());
     for (auto &f : v) {
       PUSHs(string_to_SV(f, SVs_TEMP));

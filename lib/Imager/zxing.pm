@@ -15,6 +15,10 @@ BEGIN {
   \&Imager::zxing::Decoder::setIsPure;
 *Imager::zxing::Decoder::set_return_errors =
   \&Imager::zxing::Decoder::setReturnErrors;
+*Imager::zxing::Decoder::avail_formats =
+  \&Imager::zxing::Decoder::availFormats;
+*Imager::zxing::Decoder::set_formats =
+  \&Imager::zxing::Decoder::setFormats;
 
 *Imager::zxing::Decoder::Result::is_valid =
   \&Imager::zxing::Decoder::Result::isValid;
@@ -38,9 +42,9 @@ Imager::zxing - decode barcodes from Imager images using libzxing
   # list accepted formats separated by '|'
   print $decoder->formats;
   # list available formats
-  print $decoder->avail_formats
+  print $decoder->availFormats
   # set the accepted formats
-  $decoder->set_formats("DataMatrix|QRCode")
+  $decoder->setFormats("DataMatrix|QRCode")
     or die $decoder->error;
 
   # decode any barcodes
@@ -340,6 +344,14 @@ Replaced by setIsPure().
 =item set_return_errors()
 
 Replaced by setReturnErrors().
+
+=item set_formats()
+
+Replaced by set_formats()
+
+=item avail_formats() class method
+
+Replaced by availFormats()
 
 =back
 
