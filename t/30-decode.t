@@ -43,11 +43,16 @@ if ($Imager::formats{png}) {
   is($r[0]->orientation, 20, "check orientation");
 
   {
-    local $TODO = "pure doesn't seem to matter";
     my $d2 = Imager::zxing::Decoder->new;
-    $d2->set_pure(1);
+    $d2->setIsPure(1);
     @r = $d2->decode($rim);
-    ok(!@r, "no result on pure decode of a rotated image");
+    {
+      local $TODO = "pure doesn't seem to matter";
+      ok(!@r, "no result on pure decode of a rotated image");
+    }
+    ok($d2->isPure(), "check isPure stored");
+    $d2->set_pure(0);
+    ok(!$d2->isPure(), "check old set_pure worked");
   }
 }
 
@@ -88,15 +93,15 @@ SKIP:
   # hints accessors
   my $h = Imager::zxing::Decoder->new;
   # boolean options
-  my @bool_opt = qw(try_harder try_downscale pure try_code39_extended_mode
-                validate_code39_checksum validate_itf_checksum
-                return_codabar_start_end return_errors try_rotate);
+  my @bool_opt = qw(tryHarder tryDownscale isPure tryCode39ExtendedMode
+                validateCode39CheckSum validateITFCheckSum
+                returnCodabarStartEnd returnErrors tryRotate);
   if ($v >= v2.0.0) {
-    push @bool_opt, "try_invert";
+    push @bool_opt, "tryInvert";
   }
  BOOLOPT:
   for my $o (@bool_opt) {
-    my $set_meth = "set_$o";
+    my $set_meth = "set\u$o";
     $h->$set_meth(1);
     ok($h->$o(), "$set_meth true saved");
     $h->$set_meth(0);

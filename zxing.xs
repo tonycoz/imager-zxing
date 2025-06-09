@@ -136,16 +136,16 @@ struct ZXingDecoderResult {
   Q(ZXING_VERSION_MAJOR) "." Q(ZXING_VERSION_MINOR) "." Q(ZXING_VERSION_PATCH)
 
 enum bool_options {
-  bo_try_harder = 1,
-  bo_try_downscale,
-  bo_pure,
-  bo_try_code39_extended_mode,
-  bo_validate_code39_checksum,
-  bo_validate_itf_checksum,
-  bo_return_codabar_start_end,
-  bo_return_errors,
-  bo_try_rotate,
-  bo_try_invert
+  bo_tryHarder = 1,
+  bo_tryDownscale,
+  bo_isPure,
+  bo_tryCode39ExtendedMode,
+  bo_validateCode39CheckSum,
+  bo_validateITFCheckSum,
+  bo_returnCodabarStartEnd,
+  bo_returnErrors,
+  bo_tryRotate,
+  bo_tryInvert
 };
 
 DEFINE_IMAGER_CALLBACKS;
@@ -196,99 +196,99 @@ ZXingDecoder::avail_formats()
     }
 
 void
-ZXingDecoder::set_try_harder(bool val)
+ZXingDecoder::setTryHarder(bool val)
   ALIAS:
-    set_try_harder = bo_try_harder
-    set_try_downscale = bo_try_downscale
-    set_pure = bo_pure
-    set_try_code39_extended_mode = bo_try_code39_extended_mode
-    set_validate_code39_checksum = bo_validate_code39_checksum
-    set_validate_itf_checksum = bo_validate_itf_checksum
-    set_return_codabar_start_end = bo_return_codabar_start_end
-    set_return_errors = bo_return_errors
-    set_try_rotate = bo_try_rotate
-    set_try_invert = bo_try_invert
+    setTryHarder = bo_tryHarder
+    setTryDownscale = bo_tryDownscale
+    setIsPure = bo_isPure
+    setTryCode39ExtendedMode = bo_tryCode39ExtendedMode
+    setValidateCode39CheckSum = bo_validateCode39CheckSum
+    setValidateITFCheckSum = bo_validateITFCheckSum
+    setReturnCodabarStartEnd = bo_returnCodabarStartEnd
+    setReturnErrors = bo_returnErrors
+    setTryRotate = bo_tryRotate
+    setTryInvert = bo_tryInvert
   CODE:
     switch (static_cast<bool_options>(ix)) {
-    case bo_try_harder:
+    case bo_tryHarder:
       THIS->hints.setTryHarder(val);
       break;
-    case bo_try_downscale:
+    case bo_tryDownscale:
       THIS->hints.setTryDownscale(val);
       break;
-    case bo_pure:
+    case bo_isPure:
       THIS->hints.setIsPure(val);
       break;
-    case bo_try_code39_extended_mode:
+    case bo_tryCode39ExtendedMode:
       THIS->hints.setTryCode39ExtendedMode(val);
       break;
-    case bo_validate_code39_checksum:
+    case bo_validateCode39CheckSum:
       THIS->hints.setValidateCode39CheckSum(val);
       break;
-    case bo_validate_itf_checksum:
+    case bo_validateITFCheckSum:
       THIS->hints.setValidateITFCheckSum(val);
       break;
-    case bo_return_codabar_start_end:
+    case bo_returnCodabarStartEnd:
       THIS->hints.setReturnCodabarStartEnd(val);
       break;
-    case bo_return_errors:
+    case bo_returnErrors:
       THIS->hints.setReturnErrors(val);
       break;
-    case bo_try_rotate:
+    case bo_tryRotate:
       THIS->hints.setTryRotate(val);
       break;
-    case bo_try_invert:
+    case bo_tryInvert:
 #if ZXING_VERSION_MAJOR >= 2
       THIS->hints.setTryInvert(val);
 #else
-      Perl_croak(aTHX_ "set_try_invert requires zxing-cpp 2.0.0 or later");
+      Perl_croak(aTHX_ "setTryInvert requires zxing-cpp 2.0.0 or later");
 #endif
       break;
     }
 
 bool
-ZXingDecoder::try_harder()
+ZXingDecoder::tryHarder()
   ALIAS:
-    try_harder = bo_try_harder
-    try_downscale = bo_try_downscale
-    pure = bo_pure
-    try_code39_extended_mode = bo_try_code39_extended_mode
-    validate_code39_checksum = bo_validate_code39_checksum
-    validate_itf_checksum = bo_validate_itf_checksum
-    return_codabar_start_end = bo_return_codabar_start_end
-    return_errors = bo_return_errors
-    try_rotate = bo_try_rotate
-    try_invert = bo_try_invert
+    tryHarder = bo_tryHarder
+    tryDownscale = bo_tryDownscale
+    isPure = bo_isPure
+    tryCode39ExtendedMode = bo_tryCode39ExtendedMode
+    validateCode39CheckSum = bo_validateCode39CheckSum
+    validateITFCheckSum = bo_validateITFCheckSum
+    returnCodabarStartEnd = bo_returnCodabarStartEnd
+    returnErrors = bo_returnErrors
+    tryRotate = bo_tryRotate
+    tryInvert = bo_tryInvert
   CODE:
     switch (static_cast<bool_options>(ix)) {
-    case bo_try_harder:
+    case bo_tryHarder:
       RETVAL = THIS->hints.tryHarder();
       break;
-    case bo_try_downscale:
+    case bo_tryDownscale:
       RETVAL = THIS->hints.tryDownscale();
       break;
-    case bo_pure:
+    case bo_isPure:
       RETVAL = THIS->hints.isPure();
       break;
-    case bo_try_code39_extended_mode:
+    case bo_tryCode39ExtendedMode:
       RETVAL = THIS->hints.tryCode39ExtendedMode();
       break;
-    case bo_validate_code39_checksum:
+    case bo_validateCode39CheckSum:
       RETVAL = THIS->hints.validateCode39CheckSum();
       break;
-    case bo_validate_itf_checksum:
+    case bo_validateITFCheckSum:
       RETVAL = THIS->hints.validateITFCheckSum();
       break;
-    case bo_return_codabar_start_end:
+    case bo_returnCodabarStartEnd:
       RETVAL = THIS->hints.returnCodabarStartEnd();
       break;
-    case bo_return_errors:
+    case bo_returnErrors:
       RETVAL = THIS->hints.returnErrors();
       break;
-    case bo_try_rotate:
+    case bo_tryRotate:
       RETVAL = THIS->hints.tryRotate();
       break;
-    case bo_try_invert:
+    case bo_tryInvert:
 #if ZXING_VERSION_MAJOR >= 2
       RETVAL = THIS->hints.tryInvert();
 #else

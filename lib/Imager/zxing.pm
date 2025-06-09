@@ -10,6 +10,12 @@ BEGIN {
   XSLoader::load("Imager::zxing" => $VERSION);
 }
 
+# deprecated names
+*Imager::zxing::Decoder::set_pure =
+  \&Imager::zxing::Decoder::setIsPure;
+*Imager::zxing::Decoder::set_return_errors =
+  \&Imager::zxing::Decoder::setReturnErrors;
+
 1;
 
 =head1 NAME
@@ -152,105 +158,113 @@ C<|> or comma separated string.
 
 =back
 
-There are various boolean options that can be set with set_I<option>(I<val>) setting the option and I<option>() returning the current value.
+There are various boolean options that can be set with
+setI<option>(I<val>) setting the option and I<option>() returning the
+current value.
 
 =over
 
-=item * C<try_harder>
+=item * C<tryHarder>
 
 Spend more time to try to find a barcode; optimize for accuracy, not
 speed.
 
-  $decoder->set_try_harder(0); # a bit faster
-  my $val = $decoder->try_harder;
+  $decoder->setTryHarder(0); # a bit faster
+  my $val = $decoder->tryHarder;
 
 Default: true.
 
-=item * C<try_downscale>
+=item * C<tryDownscale>
 
 Also try detecting code in downscaled images (depending on image size).
 
-  $decoder->set_try_downscale(0); # a bit faster
-  my $val = $decoder->try_harder;
+  $decoder->setTryDownscale(0); # a bit faster
+  my $val = $decoder->tryDownscale;
 
 Default: true.
 
-=item * C<pure>)
+=item * C<isPure>)
 
 Set to non-zero to only accept results where the image is an aligned
 image where the image is only the barcode.
 
-  $decoder->set_pure(1);
-  my $val = $decoder->pure();
+  $decoder->setIsPure(1);
+  my $val = $decoder->isPure();
 
 Default: false.
 
 Note: this appears to be non-functional in my testing, this accepted a
 rotated image.
 
-=item * C<try_code39_extended_mode>
+This could previously be set with set_pure(), which has been renamed
+to better match the C++ API.
+
+=item * C<tryCode39ExtendedMode>
 
 If true, the Code-39 reader will try to read extended mode.
 
-  $decoder->set_try_code39_extended_mode(0);
-  my $val = $decoder->try_code39_extended_mode();
+  $decoder->setTryCode39ExtendedMode(0);
+  my $val = $decoder->tryCode39ExtendedMode();
 
 Default: false.
 
-=item * C<validate_code39_checksum>
+=item * C<validateCode39CheckSum>
 
 Assume Code-39 codes employ a check digit and validate it.
 
-  $decoder->validate_code39_checksum(1);
-  my $val = $decoder->validate_code39_checksum;
+  $decoder->validateCode39CheckSum(1);
+  my $val = $decoder->validateCode39CheckSum;
 
 Default: false.
 
-=item * C<validate_itf_checksum>
+=item * C<validateITFCheckSum>
 
-  $decoder->set_validate_itf_checksum(1);
-  my $val = $decoder->validate_itf_checksum();
+  $decoder->setValidateITFCheckSum(1);
+  my $val = $decoder->validateITFCheckSum();
 
 Assume ITF codes employ a GS1 check digit and validate it.
 
 Default: false.
 
-=item * C<return_codabar_start_end>
+=item * C<returnCodabarStartEnd>
 
 If true, return the start and end chars in a Codabar barcode instead
 of stripping them.
 
-  $decoder->set_return_codabar_start_end(1);
-  my $val = $decoder->return_codabar_start_end();
+  $decoder->setReturnCodabarStartEnd(1);
+  my $val = $decoder->returnCodabarStartEnd();
 
 Default: false.
 
-=item * C<return_errors>
+=item * C<returnErrors>
 
 Set to non-zero to include results with soft errors such as checksum
 errors.
 
 Default: false.
 
-  $decoder->set_return_errors(1);
-  my $val = $decoder->return_errors();
+  $decoder->setReturnErrors(1);
+  my $val = $decoder->returnErrors();
 
-=item * C<try_rotate>
+This could previously be set with set_return_errors() which is now
+deprecated to better match the C++ API.
+
+=item * C<tryRotate>
 
 Also try detecting code in 90, 180 and 270 degree rotated images.
 
-  $decoder->set_try_rotate(1);
-  my $val = $decoder->try_rotate();
+  $decoder->setTryRotate(1);
+  my $val = $decoder->tryRotate();
 
 Default: true.
 
-=item * C<try_invert>
+=item * C<tryInvert>
 
 Also try detecting inverted ("reversed reflectance") codes if the
 format allows for those.
 
-  $decoder->set_try_invert(1);
-  my $val = $decoder->try_invert();
+  $decoder->setTryInvert(1);
+  my $val = $decoder->tryInvert();
 
 Default: true.  Requires zxing-cpp 2.0.0 or later.
 
@@ -297,6 +311,27 @@ right points of the decoded barcode in the supplied image, as a list.
 The rotation of the barcode image in degrees.
 
 =back
+
+=head1 DEPRECATIONS
+
+The following method names are deprecated, and listed here with their
+replacements:
+
+=over
+
+=item set_pure()
+
+Replaced by setIsPure().
+
+=item set_return_errors()
+
+Replaced by setReturnErrors().
+
+=back
+
+These have been renamed to better match the C++ API.  The old names
+are available without warning for now, but will produce a default-on
+warning in a future release and removed at some point after that.
 
 =head1 LICENSE
 
