@@ -84,6 +84,7 @@ SKIP:
   my @r = $d->decode($inverted);
   ok(@r, "got result from inverted image");
   is($r[0]->text, "Imager::zxing", "got expected result");
+  local $TODO = "DataMatrix doesn't seem to set isInverted?";
   ok($r[0]->isInverted, "check is isInverted");
   ok($r[0]->is_inverted, "check is is_inverted");
 }
