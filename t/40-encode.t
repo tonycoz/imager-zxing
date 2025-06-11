@@ -16,7 +16,8 @@ for my $type (@types) {
   my $e = Imager::zxing::Encoder->new($type);
 
   my $im = $e->encode("9781975344054", 100, 100);
-  ok($im, "make a $type");
+  ok($im, "make a $type")
+    or diag "Error for $type: ".Imager->errstr;
 }
 
 done_testing();

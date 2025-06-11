@@ -36,7 +36,11 @@ if ($Imager::formats{png}) {
   ok(!$r[0]->is_inverted, "check is_inverted");
   ok(!$r[0]->isInverted, "check isInverted");
   my @pos = $r[0]->position;
-  is_deeply(\@pos, [ 34, 34, 290, 34, 290, 290, 34, 290 ], "position expected")
+  # slightly different results from 2.3.0
+  my $expect_pos = $v >= v2.3.0
+    ? [ 34, 34, 289, 34, 289, 289, 34, 289 ]
+    : [ 34, 34, 290, 34, 290, 290, 34, 290 ];
+  is_deeply(\@pos, $expect_pos, "position expected")
     or diag "pos @pos";
 }
 
