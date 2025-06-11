@@ -25,7 +25,7 @@ jobs:
         run: |
             sudo apt-get update ||:
             sudo apt-get -y install build-essential libextutils-cppguess-perl libtest-pod-perl
-            wget https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v${{matrix/ZXING_RELEASE }}.tar.gz
+            wget https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v${{matrix.ZXING_RELEASE }}.tar.gz
             ls
             tar xzf v${{ matrix.ZXING_RELEASE}.tar.gz
             ls
