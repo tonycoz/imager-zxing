@@ -9,7 +9,7 @@ use Imager::zxing;
 
 my $v = version->new(Imager::zxing->version);
 
-my @types = Imager::zxing->availFormats;
+my @types = Imager::zxing::Decoder->availFormats; # FIXME
 
 for my $type (@types) {
   my $e = Imager::zxing::Encoder->new($type);
