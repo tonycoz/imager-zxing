@@ -1,9 +1,16 @@
 ZXingDecoder * O_OBJECT
 const ZXingDecoder * O_OBJECT
+
 ZXingDecoderResult * O_OBJECT
 const ZXingDecoderResult * O_OBJECT
+
+ZXingEncoder * O_OBJECT
+const ZXingEncoder * O_OBJECT
+
 std_string T_STD_STRING
 std_string_view T_STD_STRING_VIEW
+BarcodeFormat T_BARCODE_FORMAT
+CharacterSet T_CHAR_SET
 
 OUTPUT
 
@@ -35,3 +42,26 @@ T_STD_STRING_VIEW
         STRLEN ${var}_len;
         const char *${var}_pv = SvPV($arg, ${var}_len);
         $var = $type\{${var}_pv, ${var}_len\};
+
+T_BARCODE_FORMAT
+        {
+          const char *${var}_pv = SvPV_nolen($arg);
+          $var = BarcodeFormatFromString(${var}_pv);
+          if ($var == BarcodeFormat::None) {
+            // this will skip destroying any C++ objects
+            // in scope, so be careful using this
+            Perl_croak(aTHX_ \"Unknown barcode format %s\", ${var}_pv);
+          }
+        }
+
+T_CHAR_SET
+        {
+          const char *${var}_pv = SvPV_nolen($arg);
+          $var = CharacterSetFromString(${var}_pv);
+          if ($var == CharacterSet::Unknown
+              && strcmp(${var}_pv, \"Unknown\") != 0) {
+            // this will skip destroying any C++ objects
+            // in scope, so be careful using this
+            Perl_croak(aTHX_ \"Unknown character set %s\", ${var}_pv);
+          }
+        }

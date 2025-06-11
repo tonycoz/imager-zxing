@@ -129,7 +129,7 @@ unless (eval { $std = $guess->cpp_standard_flag("C++20") }) {
 }
 $guess->add_extra_compiler_flags
   (
-    $cflags . " " . Imager::ExtUtils->includes . " $std"
+    $cflags . " " . Imager::ExtUtils->includes . " $std -DMY_ZX_VERSION=$v"
    );
 $guess->add_extra_linker_flags
   (

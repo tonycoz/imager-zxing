@@ -29,6 +29,19 @@ BEGIN {
 *Imager::zxing::Decoder::Result::content_type =
   \&Imager::zxing::Decoder::Result::contentType;
 
+package Imager::zxing::Encoder;
+
+sub encode {
+  my ($self, $text, $width, $height) = @_;
+
+  my $result = $self->encode_($text, $width, $height);
+  unless ($result) {
+    Imager->_set_error(Imager->_error_as_msg);
+    return;
+  }
+  return $result;
+}
+
 1;
 
 =head1 NAME
@@ -121,9 +134,9 @@ Create a new decoder object, does not accept any parameters.
 
 Default is to process all available barcode formats.
 
-=item * avail_formats
+=item * availFormats
 
-  my @formats = Imager::zxing::Decoder->avail_formats
+  my @formats = Imager::zxing::Decoder->availFormats
 
 Returns a list of the barcode formats that are decodable.
 
@@ -162,12 +175,12 @@ Returns the formats the decoder accepts as a C<|> separated string.
   # default output:
   # Aztec|Codabar|Code39|Code93|Code128|DataBar|DataBarExpanded|DataMatrix|EAN-8|EAN-13|ITF|MaxiCode|PDF417|QRCode|UPC-A|UPC-E|MicroQRCode
 
-=item * set_formats(formats)
+=item * setFormats(formats)
 
 Sets the barcode formats that the decoder will decode, as a space,
 C<|> or comma separated string.
 
-  $decoder->set_formats("DataMatrix|QRCode");
+  $decoder->setFormats("DataMatrix|QRCode");
 
 =back
 
@@ -347,7 +360,7 @@ Replaced by setReturnErrors().
 
 =item set_formats()
 
-Replaced by set_formats()
+Replaced by setFormats()
 
 =item avail_formats() class method
 

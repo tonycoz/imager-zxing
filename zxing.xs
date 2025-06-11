@@ -1,7 +1,9 @@
 #define ZX_USE_UTF8
 #include "ReadBarcode.h"
+#include "MultiFormatWriter.h"
 #include "GTIN.h"
 #include "ZXVersion.h"
+#include "BitMatrix.h"
 #include <memory>
 
 #define PERL_NO_GET_CONTEXT
@@ -127,6 +129,112 @@ struct ZXingDecoderResult {
     return m_result.orientation();
   }
   Result m_result;
+};
+
+enum class ImagerFormat {
+  Palette,
+  Gray,
+  RGB,
+  RGBA,
+};
+
+// I want some imager specific settings too
+// not using inheritence since the encode() method won't be
+// substitutable.
+struct ZXingEncoder {
+  ZXingEncoder(BarcodeFormat fmt): m_writer(fmt) {}
+
+  void
+  setEncoding(CharacterSet encoding) {
+    m_writer.setEncoding(encoding);
+  }
+  void
+  setEccLevel(int level) {
+    m_writer.setEccLevel(level);
+  }
+  void
+  setMargin(int margin) {
+    m_writer.setMargin(margin);
+  }
+  i_img *
+  encode(std_string_view text, int width, int height) const {
+    try {
+      const BitMatrix matrix = m_writer.encode(std::string{text}, width, height);
+      switch (m_format) {
+      case ImagerFormat::Palette:
+        return matrix_to_pal(matrix);
+
+      case ImagerFormat::Gray:
+        return matrix_to_direct(matrix, 1);
+
+      case ImagerFormat::RGB:
+        return matrix_to_direct(matrix, 3);
+
+      case ImagerFormat::RGBA:
+        return matrix_to_direct(matrix, 4);
+      }
+      return nullptr;
+    }
+    catch (std::exception &e) {
+      i_clear_error();
+      i_push_error(0, e.what());
+      return nullptr;
+    }
+  }
+  
+  MultiFormatWriter m_writer;
+  ImagerFormat m_format = ImagerFormat::RGB;
+  std::string m_error;
+  // this requires C++20, oops
+  i_color m_fg = i_color{ .rgba = { 0, 0, 0, 255 } };
+  i_color m_bg = i_color{ .rgba = { 255, 255, 255, 255 } };
+private:
+  i_img *
+  matrix_to_direct(const BitMatrix &matrix, int channels) const {
+    i_img *img = i_img_8_new(matrix.width(), matrix.height(), channels);
+    if (!img) {
+      return nullptr;
+    }
+    std::vector<i_sample_t> row;
+    i_img_dim row_samps = (i_img_dim)matrix.width() * channels;
+    // i_img_dim is signed
+    row.resize(static_cast<size_t>(row_samps));
+    for (i_img_dim y = 0; y < matrix.height(); ++y) {
+      auto out = begin(row);
+      for (i_img_dim x = 0; x < matrix.width(); ++x) {
+        if (matrix.get(x, y))
+          out = std::copy(m_fg.channel, m_fg.channel+channels, out);
+        else 
+          out = std::copy(m_bg.channel, m_bg.channel+channels, out);
+      }
+      assert(out == row.end());
+      i_psamp(img, 0, matrix.width(), y, row.data(), nullptr, channels);
+    }
+
+    return img;
+  }
+  i_img *
+  matrix_to_pal(const BitMatrix &matrix) const {
+    i_img *img = i_img_pal_new(matrix.width(), matrix.height(), 3, 256);
+    if (!img) {
+      return nullptr;
+    }
+    i_addcolors(img, &m_bg, 1);
+    i_addcolors(img, &m_fg, 1);
+    std::vector<i_palidx> row;
+    // width() is signed int
+    row.resize(static_cast<size_t>(matrix.width()));
+    for (i_img_dim y = 0; y < matrix.height(); ++y) {
+      auto out = begin(row);
+      for (i_img_dim x = 0; x < matrix.width(); ++x) {
+        *out++ = matrix.get(x, y) ? 1 : 0;
+      }
+      assert(out == row.end());
+      i_ppal(img, 0, matrix.width(), y, row.data());
+    }
+
+    return img;
+  }
 };
 
 #define Q_(x) #x
@@ -333,6 +441,32 @@ ZXingDecoderResult::position() const
 
 int
 ZXingDecoderResult::orientation() const
+
+MODULE = Imager::zxing PACKAGE = Imager::zxing::Encoder PREFIX = ZXingEncoder::
+
+ZXingEncoder *
+ZXingEncoder::new(BarcodeFormat fmt)
+
+void
+ZXingEncoder::DESTROY()
+
+void
+ZXingEncoder::setEncoding(CharacterSet encoding)
+
+void
+ZXingEncoder::setEccLevel(int level)
+
+void
+ZXingEncoder::setMargin(int margin)
+
+Imager
+ZXingEncoder::encode_(std_string_view text, int width, int height) const
+  CODE:
+    RETVAL = THIS->encode(text, width, height);
+    if (!RETVAL)
+      XSRETURN_EMPTY;
+  OUTPUT:
+    RETVAL
 
 BOOT:
         PERL_INITIALIZE_IMAGER_CALLBACKS;
