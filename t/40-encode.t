@@ -11,6 +11,7 @@ my $v = version->new(Imager::zxing->version);
 
 my @types = Imager::zxing::Decoder->availFormats; # FIXME
 
+diag "Types @types\n";
 for my $type (@types) {
   my $e = Imager::zxing::Encoder->new($type);
 
