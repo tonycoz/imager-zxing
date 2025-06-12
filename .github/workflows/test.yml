@@ -16,22 +16,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ZXING_RELEASE:
-          - "2.1.0"
-          - "2.2.0"
-          - "2.3.0"
+        release:
+          - version: "2.1.0"
+            cmake-options: 
+          - version: "2.2.0"
+            cmake-options: 
+          - version: "2.3.0"
+            cmake-options: -DZXING_EXPERIMENTAL_API=ON
     steps:
       - name: install dependencies
         run: |
             sudo apt-get update ||:
             sudo apt-get -y install build-essential libextutils-cppguess-perl libtest-pod-perl
-            wget https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v${{ matrix.ZXING_RELEASE }}.tar.gz
+            wget https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v${{ matrix.release.version }}.tar.gz
             ls
-            tar xzf v${{ matrix.ZXING_RELEASE }}.tar.gz
+            tar xzf v${{ matrix.release.version }}.tar.gz
             ls
-            cd zxing-cpp-${{ matrix.ZXING_RELEASE }}
+            cd zxing-cpp-${{ matrix.release.version }}
             mkdir build
-            cmake -B build && cd build && make && sudo make install
+            cmake -B build ${{ matrix.release.cmake-options }} && cd build && make && sudo make install
             echo "LD_LIBRARY_PATH=$(pkg-config --variable=libdir zxing)" >>$GITHUB_ENV
             sudo cpan Imager
       - name: checkout
