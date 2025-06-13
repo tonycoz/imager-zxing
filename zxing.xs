@@ -41,6 +41,13 @@ string_to_SVx(pTHX_ const std::string &str, U32 flags) {
   return sv;
 }
 
+static std::string_view
+SV_to_utf8_bytes_string_view(pTHX_ SV *sv, bool want_bytes) {
+  STRLEN len;
+  const char *pv = want_bytes ? SvPVbyte(sv, len) : SvPVutf8(sv, len);
+  return std::string_view{pv, len};
+}
+
 static std::unique_ptr<uint8_t[]>
 get_image_data(i_img *im, ImageFormat &format) {
   int channels = im->channels < 3 ? 1 : 3;
@@ -56,6 +63,49 @@ get_image_data(i_img *im, ImageFormat &format) {
   format = channels == 1 ? ImageFormat::Lum : ImageFormat::RGB;
   return data;
 }
+
+enum class ImagerFormat {
+  Palette,
+  Gray,
+  RGB,
+  RGBA,
+};
+
+#define SVtoImagerFormat(sv) xSVtoImagerFormat(aTHX_ sv)
+static ImagerFormat
+xSVtoImagerFormat(pTHX_ SV *sv) {
+  const char *pv = SvPV_nolen(sv);
+  if (strcmp(pv, "Palette") == 0)
+    return ImagerFormat::Palette;
+  else if (strcmp(pv, "Gray") == 0 || strcmp(pv, "Grey") == 0)
+    return ImagerFormat::Gray;
+  else if (strcmp(pv, "RGB") == 0)
+    return ImagerFormat::RGB;
+  else if (strcmp(pv, "RGBA") == 0)
+    return ImagerFormat::RGBA;
+
+  else
+    croak("Unknown image format %s", pv);
+}
+
+// based on what MultiFormatWriter supports in 2.3.0, which appears
+// to be supported in 1.4.0 too
+//
+// hopefully zxing will provide an API for this for the new API that's
+// currently experimental
+const BarcodeFormats encoderFormats{
+  BarcodeFormat::Aztec |
+    BarcodeFormat::DataMatrix |
+    BarcodeFormat::PDF417 |
+    BarcodeFormat::QRCode |
+    BarcodeFormat::Codabar |
+    BarcodeFormat::Code39 |
+    BarcodeFormat::Code128 |
+    BarcodeFormat::EAN8 |
+    BarcodeFormat::EAN13 |
+    BarcodeFormat::ITF |
+    BarcodeFormat::UPCA |
+    BarcodeFormat::UPCE };
 
 struct ZXingDecoder {
   ZXingDecoder() {
@@ -141,33 +191,41 @@ struct ZXingDecoderResult {
   Result m_result;
 };
 
-enum class ImagerFormat {
-  Palette,
-  Gray,
-  RGB,
-  RGBA,
-};
-
-// I want some imager specific settings too
-// not using inheritence since the encode() method won't be
-// substitutable.
 struct ZXingEncoder {
   ZXingEncoder(BarcodeFormat fmt): m_writer(fmt) {}
 
-  void
-  setEncoding(CharacterSet encoding) {
-    m_writer.setEncoding(encoding);
-  }
   void
   setEccLevel(int level) {
     m_writer.setEccLevel(level);
   }
   void
-  setMargin(int margin) {
-    m_writer.setMargin(margin);
+  setIsBytes(bool is_bytes) {
+    m_is_bytes = is_bytes;    
+
+    m_writer.setEncoding(m_is_bytes ? CharacterSet::BINARY : CharacterSet::UTF8);
+  }
+  bool
+  isBytes() const {
+    return m_is_bytes;
+  }
+  void setHasQuietZone(bool qz) {
+    m_has_quiet_zone = qz;
+    m_writer.setMargin(m_has_quiet_zone ? 10 : 0);
+  }
+  void
+  setFormat(ImagerFormat fmt) {
+    m_format = fmt;
+  }
+  void
+  setForeground(const i_color *c) {
+    m_fg = *c;
+  }
+  void
+  setBackground(const i_color *c) {
+    m_bg = *c;
   }
   i_img *
-  encode(std_string_view text, int width, int height) const {
+  encode(std::string_view text, int width, int height) const {
     try {
       const BitMatrix matrix = m_writer.encode(std::string{text}, width, height);
       switch (m_format) {
@@ -191,13 +249,24 @@ struct ZXingEncoder {
       return nullptr;
     }
   }
+  static std::vector<std::string>
+  availFormats() {
+    std::vector<std::string> formats;
+    for (auto f : encoderFormats) {
+      formats.emplace_back(ToString(f));
+    }
+    return formats;
+  }
   
   MultiFormatWriter m_writer;
   ImagerFormat m_format = ImagerFormat::RGB;
   std::string m_error;
+  bool m_is_bytes = false;
+  bool m_has_quiet_zone = true;
   // this requires C++20, oops
   i_color m_fg = i_color{ .rgba = { 0, 0, 0, 255 } };
   i_color m_bg = i_color{ .rgba = { 255, 255, 255, 255 } };
+
 private:
   i_img *
   matrix_to_direct(const BitMatrix &matrix, int channels) const {
@@ -205,10 +274,9 @@ private:
     if (!img) {
       return nullptr;
     }
+    std::size_t row_samps = matrix.width() * channels;
     std::vector<i_sample_t> row;
-    i_img_dim row_samps = (i_img_dim)matrix.width() * channels;
-    // i_img_dim is signed
-    row.resize(static_cast<size_t>(row_samps));
+    row.resize(row_samps);
     for (i_img_dim y = 0; y < matrix.height(); ++y) {
       auto out = begin(row);
       for (i_img_dim x = 0; x < matrix.width(); ++x) {
@@ -223,6 +291,7 @@ private:
 
     return img;
   }
+
   i_img *
   matrix_to_pal(const BitMatrix &matrix) const {
     i_img *img = i_img_pal_new(matrix.width(), matrix.height(), 3, 256);
@@ -232,8 +301,7 @@ private:
     i_addcolors(img, &m_bg, 1);
     i_addcolors(img, &m_fg, 1);
     std::vector<i_palidx> row;
-    // width() is signed int
-    row.resize(static_cast<size_t>(matrix.width()));
+    row.resize(matrix.width());
     for (i_img_dim y = 0; y < matrix.height(); ++y) {
       auto out = begin(row);
       for (i_img_dim x = 0; x < matrix.width(); ++x) {
@@ -461,22 +529,41 @@ void
 ZXingEncoder::DESTROY()
 
 void
-ZXingEncoder::setEncoding(CharacterSet encoding)
-
-void
 ZXingEncoder::setEccLevel(int level)
 
 void
-ZXingEncoder::setMargin(int margin)
+ZXingEncoder::setIsBytes(bool is_bytes)
+
+void
+ZXingEncoder::setHasQuietZone(bool has_qz)
+
+void
+ZXingEncoder::setFormat(ImagerFormat fmt)
+
+void
+ZXingEncoder::setForeground(Imager::Color c)
+
+void
+ZXingEncoder::setBackground(Imager::Color c)
 
 Imager
-ZXingEncoder::encode_(std_string_view text, int width, int height) const
+ZXingEncoder::encode_(SV *text_sv, int width, int height) const
   CODE:
+    std::string_view text = SV_to_utf8_bytes_string_view(aTHX_ text_sv, THIS->isBytes());
     RETVAL = THIS->encode(text, width, height);
     if (!RETVAL)
       XSRETURN_EMPTY;
-  OUTPUT:
-    RETVAL
+    OUTPUT : RETVAL
+
+static void
+ZXingEncoder::availFormats()
+  PPCODE:
+    const auto &v = ZXingEncoder::availFormats();
+    EXTEND(SP, v.size());
+    for (auto &f : v) {
+      PUSHs(string_to_SV(f, SVs_TEMP));
+    }
+    
 
 BOOT:
         PERL_INITIALIZE_IMAGER_CALLBACKS;

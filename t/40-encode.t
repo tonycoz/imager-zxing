@@ -9,7 +9,7 @@ use Imager::zxing;
 
 my $v = version->new(Imager::zxing->version);
 
-my @types = Imager::zxing::Decoder->availFormats; # FIXME
+my @types = Imager::zxing::Encoder->availFormats;
 
 my %type_strs =
   (
@@ -23,16 +23,12 @@ diag "Types @types\n";
 for my $type (@types) {
   my $e = Imager::zxing::Encoder->new($type);
 
- SKIP: {
-    my $text = $type_strs{$type};
-    defined $text or $text = "9781975344054";
-    my $im = $e->encode($text, 100, 100);
-    my $msg = Imager->errstr;
-    skip "$type not supported", 1
-      if !$im && $msg =~ /^Unsupported format: $type$/;
-    ok($im, "make a $type")
-      or diag "Error for $type: ".Imager->errstr;
-  }
+  my $text = $type_strs{$type};
+  defined $text or $text = "9781975344054";
+  my $im = $e->encode($text, 100, 100);
+  my $msg = Imager->errstr;
+  ok($im, "make a $type")
+    or diag "Error for $type: ".Imager->errstr;
 }
 
 done_testing();

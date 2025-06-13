@@ -9,8 +9,9 @@ const ZXingEncoder * O_OBJECT
 
 std_string T_STD_STRING
 std_string_view T_STD_STRING_VIEW
+utf8_std_string_view T_UTF8_STD_STRING_VIEW
 BarcodeFormat T_BARCODE_FORMAT
-CharacterSet T_CHAR_SET
+ImagerFormat T_IMAGER_FORMAT
 
 OUTPUT
 
@@ -43,6 +44,11 @@ T_STD_STRING_VIEW
         const char *${var}_pv = SvPV($arg, ${var}_len);
         $var = $type\{${var}_pv, ${var}_len\};
 
+T_UTF8_STD_STRING_VIEW
+        STRLEN ${var}_len;
+        const char *${var}_pv = SvPVutf8($arg, ${var}_len);
+        $var = $type\{${var}_pv, ${var}_len\};
+
 T_BARCODE_FORMAT
         {
           const char *${var}_pv = SvPV_nolen($arg);
@@ -54,14 +60,6 @@ T_BARCODE_FORMAT
           }
         }
 
-T_CHAR_SET
-        {
-          const char *${var}_pv = SvPV_nolen($arg);
-          $var = CharacterSetFromString(${var}_pv);
-          if ($var == CharacterSet::Unknown
-              && strcmp(${var}_pv, \"Unknown\") != 0) {
-            // this will skip destroying any C++ objects
-            // in scope, so be careful using this
-            Perl_croak(aTHX_ \"Unknown character set %s\", ${var}_pv);
-          }
-        }
+T_IMAGER_FORMAT
+        $var = SVtoImagerFormat($arg);
+
