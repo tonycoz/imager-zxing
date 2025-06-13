@@ -15,6 +15,12 @@
 
 using namespace ZXing;
 
+#if MY_ZXVERSION >= 20200
+using MyReaderOptions = ZXing::ReaderOptions;
+#else
+using MyReaderOptions = ZXing::DecodeHints;
+#endif
+
 // typemap support
 using std_string = std::string;
 using std_string_view = std::string_view;
@@ -94,7 +100,7 @@ struct ZXingDecoder {
     return formats;
   }
 
-  DecodeHints hints;
+  MyReaderOptions hints;
   std::string m_error;
 };
 
