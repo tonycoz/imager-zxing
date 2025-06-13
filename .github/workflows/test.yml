@@ -22,7 +22,7 @@ jobs:
           - version: "2.2.0"
             cmake-options: 
           - version: "2.3.0"
-            cmake-options: -DZXING_EXPERIMENTAL_API=ON
+            cmake-options:
     steps:
       - name: install dependencies
         run: |
