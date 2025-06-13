@@ -95,8 +95,6 @@ OS unsupported: Can't find pkg-config for zxing or zxing-cpp.
 Make sure you have the devel package installed
 DIE
 
-print "Found $pkgname\n";
-
 my $cflags = `pkg-config --cflags $pkgname`;
 my $ldflags = `pkg-config --libs $pkgname`;
 my $version = `pkg-config --modversion $pkgname`;
@@ -112,6 +110,9 @@ or
 didn't return a useful result.
 DIE
 }
+
+print "Found $pkgname $version\n";
+
 my @v = split /\./, $version;
 my $v = $v[0] * 10_000 + $v[1] * 100 + $v[2];
 if ($v < 10400) {
