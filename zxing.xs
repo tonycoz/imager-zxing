@@ -1,9 +1,13 @@
 #define ZX_USE_UTF8
-#include "ReadBarcode.h"
-#include "MultiFormatWriter.h"
-#include "GTIN.h"
-#include "ZXVersion.h"
-#include "BitMatrix.h"
+#if MY_ZXVERSION >= 20300
+#  include "ZXing/Version.h"
+#else
+#  include "ZXing/ZXVersion.h"
+#endif
+#include "ZXing/ReadBarcode.h"
+#include "ZXing/MultiFormatWriter.h"
+#include "ZXing/GTIN.h"
+#include "ZXing/BitMatrix.h"
 #include <memory>
 
 #define PERL_NO_GET_CONTEXT
