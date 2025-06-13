@@ -12,11 +12,14 @@ on:
 jobs:
   imager-zxing:
     runs-on: ubuntu-latest
+    container:
+      image: debian:latest
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         release:
+          - version: "default"
           - version: "2.1.0"
             cmake-options: 
           - version: "2.2.0"
@@ -26,17 +29,21 @@ jobs:
     steps:
       - name: install dependencies
         run: |
-            sudo apt-get update ||:
-            sudo apt-get -y install build-essential libextutils-cppguess-perl libtest-pod-perl
-            wget https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v${{ matrix.release.version }}.tar.gz
-            ls
-            tar xzf v${{ matrix.release.version }}.tar.gz
-            ls
-            cd zxing-cpp-${{ matrix.release.version }}
-            mkdir build
-            cmake -B build ${{ matrix.release.cmake-options }} && cd build && make && sudo make install
-            echo "LD_LIBRARY_PATH=$(pkg-config --variable=libdir zxing)" >>$GITHUB_ENV
-            sudo cpan Imager
+            apt update ||:
+            apt -y install build-essential libextutils-cppguess-perl libtest-pod-perl wget pkgconf cmake git
+            if [ "${{ matrix.release.version }}" = "default" ]; then
+              apt -y install libzxing-dev
+            else
+              wget https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v${{ matrix.release.version }}.tar.gz
+              ls
+              tar xzf v${{ matrix.release.version }}.tar.gz
+              ls
+              cd zxing-cpp-${{ matrix.release.version }}
+              mkdir build
+              cmake -B build ${{ matrix.release.cmake-options }} && cd build && make && make install
+              echo "LD_LIBRARY_PATH=$(pkg-config --variable=libdir zxing)" >>$GITHUB_ENV
+            fi
+            cpan Imager
       - name: checkout
         uses: actions/checkout@v2
       - name: configure
